@@ -155,7 +155,7 @@ cat << END >> Makefile
 
 build:
 	\$(MAKE) -f $NGX_MAKEFILE
-	\$(MAKE) -f $NGX_MAKEFILE manpage
+  # \$(MAKE) -f $NGX_MAKEFILE manpage
 
 install:
 	\$(MAKE) -f $NGX_MAKEFILE install
