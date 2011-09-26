@@ -1,0 +1,8 @@
+usr/sbin
+etc/nginx
+etc/nginx/conf.d
+etc/nginx/sites-enabled
+etc/nginx/sites-available
+var/log/nginx
+var/lib/nginx
+var/www/nginx-default
