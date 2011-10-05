@@ -61,7 +61,7 @@ And send a get request on uri /flush into nginx.
 
 Response is a HTTP code 200, with body containing the string `OK`.
 
-Flush memcached
+Stats memcached
 ===
 
 Add a location in nginx config like that :
