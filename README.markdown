@@ -5,7 +5,8 @@ Main features :
 
 * Send customs http headers to client when using memcached module. Http headers are stored in memcached, with body data.
 * Hash keys before inserting into memcached : allow to have very big keys
-* Put data into memcached, with expire time
+* Put data into memcached, with expire time. You can use the `add` or `set` memcached command.
+* Delete data from memcached
 * Flush memcached
 * Get memcached'stats
 
@@ -51,9 +52,14 @@ Add a location in nginx config like that :
       memcached_pass memcached_upstream;
     }
     
-And send a put request into nginx, with body containing what you want to store in memcached, under the key $memcached_key.
+And send a PUT HTTP request into nginx, with body containing what you want to store in memcached, under the key $memcached_key. The `set` memcached command is used.
 
 Response is a HTTP code 200, with body containing the string `STORED`.
+
+Note : You can also send get request to this location, data will be extracted from memcached, like in a standard memcached location.
+
+Expiration time
+---
 
 Expire time in memcached is set by default to 0.
 To set another value, add following line to config :
@@ -67,8 +73,42 @@ Or
 The first one will set a fixed expire value (2 seconds).
 
 The second one will take the expire value to set in memcached from http header `Memcached-Expire`.
+
+Use the `add` memcached command
+---
+
+If you want to use the `add` memcached command, add following line in config :
+
+    set $memcached_use_add 1;
+
+Or 
+
+    set $memcached_use_add $http_memcached_use_add;
+
+The first one will always force the use of `add` memcached command.
+
+The second one will use the `add` memcached command only if the http header `Memcached-Use-Add` is present.
+
+If you send an `add` command on an existing key, memcached will respond `NOT_STORED`, and the nginx module will issue a HTTP code 409.
+
+
+Delete data in memcached
+===
+
+Add a location in nginx config like that :
+
+    location / {
+      set $memcached_key "$request_uri";
+      memcached_allow_delete on;
+      memcached_pass memcached_upstream;
+    }
     
-Note : you can also send get request to this location, data will be extracted from memcached, like in a standard memcached location.
+And send a DELETE HTTP request into nginx.
+
+Response is a HTTP code 200, with body containing the string `DELETED`, or HTTP code 404, with body `NOT_FOUND` if the key does not exist in memcached.
+
+Note : It can be used with `memcached_allow_put` in the same location
+
 
 Flush memcached
 ===
