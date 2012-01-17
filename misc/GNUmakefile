@@ -3,12 +3,12 @@ VER =		$(shell grep 'define NGINX_VERSION' src/core/nginx.h	\
 			| sed -e 's/^.*\"\(.*\)\"/\1/')
 NGINX =		nginx-$(VER)
 TEMP =		tmp
-REPO =		svn://svn.nginx.com
+REPO =		$(shell svn info | sed -n 's/^Repository Root: //p')
 
 OBJS =		objs.msvc8
-OPENSSL =	openssl-1.0.0d
-ZLIB =		zlib-1.2.3
-PCRE =		pcre-7.9
+OPENSSL =	openssl-1.0.0f
+ZLIB =		zlib-1.2.5
+PCRE =		pcre-8.12
 
 
 release:
@@ -26,17 +26,12 @@ release:
 
 	rm -r $(TEMP)/$(NGINX)/src/mysql
 
-	rm $(TEMP)/$(NGINX)/src/http/modules/ngx_http_status_module.c
-
 	mv $(TEMP)/$(NGINX)/docs/text/LICENSE $(TEMP)/$(NGINX)
 	mv $(TEMP)/$(NGINX)/docs/text/README $(TEMP)/$(NGINX)
 	mv $(TEMP)/$(NGINX)/docs/html $(TEMP)/$(NGINX)
 	mv $(TEMP)/$(NGINX)/docs/man $(TEMP)/$(NGINX)
 
 	$(MAKE) -f docs/GNUmakefile changes
-
-	# delete incomplete draft documentation
-	rm -r $(TEMP)/$(NGINX)/html/http
 
 	rm -r $(TEMP)/$(NGINX)/docs
 	rm -r $(TEMP)/$(NGINX)/misc
@@ -51,12 +46,12 @@ RELEASE:
 	svn ci -F $(TEMP)/message
 
 	echo "release-$(VER) tag" > $(TEMP)/message
-	svn copy $(REPO)/nginx/trunk $(REPO)/nginx/tags/release-$(VER)  \
+	svn copy $(REPO)/trunk $(REPO)/tags/release-$(VER)		\
 		-F $(TEMP)/message
 
 	svn up
 
-	$(MAKE) release
+	$(MAKE) -f misc/GNUmakefile release
 
 
 snapshot:
@@ -74,8 +69,6 @@ snapshot:
 	rm -r $(TEMP)/$(NGINX)/src/os/win32
 
 	rm -r $(TEMP)/$(NGINX)/src/mysql
-
-	rm $(TEMP)/$(NGINX)/src/http/modules/ngx_http_status_module.c
 
 	mv $(TEMP)/$(NGINX)/docs/text/LICENSE $(TEMP)/$(NGINX)
 	mv $(TEMP)/$(NGINX)/docs/text/README $(TEMP)/$(NGINX)
@@ -104,9 +97,6 @@ zip:
 	svn export -rHEAD contrib $(TEMP)/$(NGINX)/contrib/
 	svn export -rHEAD docs/html $(TEMP)/$(NGINX)/html/
 
-	# delete incomplete draft documentation
-	rm -r $(TEMP)/$(NGINX)/html/http
-
 	$(MAKE) -f docs/GNUmakefile changes
 
 	cp -p $(OBJS)/nginx.exe $(TEMP)/$(NGINX)
@@ -121,7 +111,7 @@ zip:
 	cp -p $(OBJS)/lib/$(PCRE)/LICENCE				\
 		$(TEMP)/$(NGINX)/docs/PCRE.LICENCE
 
-	perl -ne 'print if /^ \(C\) 1995-2004/ .. /^  jloup\@gzip.org/'	\
+	perl -ne 'print if /^ \(C\) 1995-20/ .. /^  jloup\@gzip.org/'	\
 		$(OBJS)/lib/$(ZLIB)/README				\
 		> $(TEMP)/$(NGINX)/docs/zlib.LICENSE
 
